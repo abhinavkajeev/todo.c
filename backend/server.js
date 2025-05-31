@@ -10,14 +10,11 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-// ...existing code...
-// Middleware
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-// ...existing code...
 app.use(express.json());
 
 // MongoDB connection
@@ -120,6 +117,11 @@ const authenticateToken = async (req, res, next) => {
 };
 
 // Auth Routes
+
+// Health check route
+app.get('/', (res) => {
+  res.json({ message: 'Api service is running!' });
+});
 
 // Register
 app.post('/api/auth/register', async (req, res) => {
