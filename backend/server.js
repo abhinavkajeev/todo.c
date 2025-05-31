@@ -17,7 +17,7 @@ app.use(cors({
 
     // Allow Vercel frontend and any localhost port
     const allowedOrigins = [
-      'https://todo-c-amber.vercel.app'
+      'https://todo-c-amber.vercel.app', 'http://localhost:5173'
     ];
     const localhostRegex = /^http:\/\/localhost:\d+$/;
 
@@ -31,6 +31,7 @@ app.use(cors({
   credentials: true,
   optionsSuccessStatus: 200,
 }));
+app.use(express.json()); // <-- Add this line
 
 // MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/todoapp';
