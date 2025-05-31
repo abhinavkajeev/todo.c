@@ -119,7 +119,7 @@ const authenticateToken = async (req, res, next) => {
 // Auth Routes
 
 // Health check route
-app.get('/', (res) => {
+app.get('/', (req, res) => {
   res.json({ message: 'Api service is running!' });
 });
 
