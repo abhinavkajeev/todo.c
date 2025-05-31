@@ -4,7 +4,7 @@ import AuthForm from './AuthForm';
 import Dashboard from './Dashboard';
 
 // API Base URL - change this to your backend URL
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://todo-c-backend.vercel.app/api';
 
 const TodoApp = () => {
   const [currentView, setCurrentView] = useState('landing');
