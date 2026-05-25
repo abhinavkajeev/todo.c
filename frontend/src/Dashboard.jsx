@@ -1,481 +1,419 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  CheckCircle, 
-  Plus, 
-  Trash2, 
-  Edit, 
-  Save, 
-  X, 
-  LogOut,
-  Sparkles,
-  Target,
-  Clock
+import React, { useState } from 'react';
+import {
+  CheckCircle, Plus, Trash2, Edit3, Check, X,
+  LogOut, ListTodo, Clock, TrendingUp,
 } from 'lucide-react';
 
-const Dashboard = React.memo(({ 
-  user = { name: "Alex" }, 
-  handleLogout = () => {}, 
-  newTodo = "", 
-  setNewTodo = () => {}, 
-  addTodo = () => {}, 
-  todoStats = { total: 12, completed: 8, pending: 4 }, 
-  todos = [
-    { _id: 1, text: "Complete dashboard redesign", completed: true },
-    { _id: 2, text: "Review code with team", completed: false },
-    { _id: 3, text: "Update documentation", completed: false },
-    { _id: 4, text: "Plan next sprint", completed: true }
-  ], 
-  toggleTodo = () => {}, 
-  editingId = null, 
-  setEditingId = () => {}, 
-  editText = "", 
-  setEditText = () => {}, 
-  updateTodo = () => {}, 
-  deleteTodo = () => {} 
+const Dashboard = React.memo(({
+  user = { name: 'Alex' },
+  handleLogout = () => {},
+  newTodo = '',
+  setNewTodo = () => {},
+  addTodo = () => {},
+  todoStats = { total: 0, completed: 0, pending: 0 },
+  todos = [],
+  toggleTodo = () => {},
+  editingId = null,
+  setEditingId = () => {},
+  editText = '',
+  setEditText = () => {},
+  updateTodo = () => {},
+  deleteTodo = () => {},
 }) => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
+  const [hoveredId, setHoveredId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+
+  const progress = todoStats.total > 0
+    ? Math.round((todoStats.completed / todoStats.total) * 100)
+    : 0;
+
+  const handleDelete = async (id) => {
+    setDeletingId(id);
+    await deleteTodo(id);
+    setDeletingId(null);
   };
 
-  const itemVariants = {
-    hidden: { y: 30, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 24
-      }
-    }
-  };
-
-  const cardVariants = {
-    hidden: { scale: 0.8, opacity: 0 },
-    visible: {
-      scale: 1,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 260,
-        damping: 20
-      }
-    }
-  };
+  const statCards = [
+    {
+      id: 'total',
+      label: 'Total tasks',
+      value: todoStats.total,
+      icon: ListTodo,
+      color: '#8b5cf6',
+      bg: 'rgba(139,92,246,0.1)',
+      border: 'rgba(139,92,246,0.2)',
+    },
+    {
+      id: 'completed',
+      label: 'Completed',
+      value: todoStats.completed,
+      icon: CheckCircle,
+      color: '#10b981',
+      bg: 'rgba(16,185,129,0.1)',
+      border: 'rgba(16,185,129,0.2)',
+    },
+    {
+      id: 'pending',
+      label: 'Remaining',
+      value: todoStats.pending,
+      icon: Clock,
+      color: '#f59e0b',
+      bg: 'rgba(245,158,11,0.1)',
+      border: 'rgba(245,158,11,0.2)',
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 relative overflow-hidden">
-      {/* Enhanced Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {/* Floating particles */}
-        {Array.from({ length: 8 }, (_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-30"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -100, 0],
-              x: [0, 50, 0],
-              opacity: [0.3, 0.8, 0.3]
-            }}
-            transition={{
-              duration: 8 + Math.random() * 4,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: Math.random() * 2
-            }}
-          />
-        ))}
-        
-        {/* Large gradient orbs */}
-        <motion.div
-          animate={{
-            x: [0, 100, 0],
-            y: [0, -100, 0],
-            scale: [1, 1.2, 1],
-            rotate: [0, 180, 360]
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-          className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-purple-400/20 to-violet-400/20 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{
-            x: [0, -150, 0],
-            y: [0, 100, 0],
-            scale: [1, 0.8, 1],
-            rotate: [360, 180, 0]
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-pink-400/20 to-blue-400/20 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{
-            x: [0, 80, 0],
-            y: [0, -80, 0],
-            scale: [1, 1.3, 1],
-            opacity: [0.1, 0.3, 0.1]
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute top-1/2 left-1/2 w-48 h-48 bg-gradient-to-r from-indigo-400/15 to-purple-400/15 rounded-full blur-2xl transform -translate-x-1/2 -translate-y-1/2"
-        />
-      </div>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', flexDirection: 'column' }}>
 
-      {/* Enhanced Header */}
-      <motion.header
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="relative backdrop-blur-xl bg-white/10 border-b border-white/20 shadow-2xl"
-      >
-        <div className="container mx-auto px-6 py-6 flex justify-between items-center">
-          <motion.div 
-            className="flex items-center space-x-4"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 400 }}
-          >
-            <motion.div
-              animate={{ rotate: [0, 360] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-              className="relative"
-            >
-              <CheckCircle className="w-10 h-10 text-white drop-shadow-lg" style={{ filter: 'drop-shadow(0 0 20px rgba(168, 85, 247, 0.5))' }} />
-              <motion.div
-                animate={{ scale: [1, 1.3, 1], rotate: [0, 180, 360] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <Sparkles className="w-4 h-4 text-yellow-300 absolute -top-1 -right-1" />
-              </motion.div>
-            </motion.div>
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">
-                TodoMaster
-              </h1>
-              <p className="text-white/70 text-sm">Productivity reimagined</p>
+      {/* Top nav */}
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 100,
+        background: 'rgba(10,10,15,0.85)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid var(--border)',
+      }}>
+        <div style={{
+          maxWidth: 900, margin: '0 auto', padding: '0 24px',
+          height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 9,
+              background: 'linear-gradient(135deg, #7c3aed, #ec4899)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 0 16px rgba(124,58,237,0.4)',
+            }}>
+              <CheckCircle size={16} color="#fff" strokeWidth={2.5} />
             </div>
-          </motion.div>
-          <div className="flex items-center space-x-6">
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
-              className="text-white/90"
-            >
-              <span className="text-lg">Welcome back, </span>
-              <span className="font-semibold bg-gradient-to-r from-white to-violet-200 bg-clip-text text-transparent">
+            <span style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-primary)' }}>TaskFlow</span>
+          </div>
+
+          {/* Right side */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #7c3aed40, #ec489940)',
+                border: '1px solid var(--border)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 12, fontWeight: 700, color: '#a78bfa',
+              }}>
+                {user?.name?.[0]?.toUpperCase() || 'U'}
+              </div>
+              <span style={{ fontSize: 14, color: 'var(--text-secondary)', fontWeight: 500 }}>
                 {user?.name}
               </span>
-            </motion.div>
-            <motion.button
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              whileTap={{ scale: 0.95 }}
+            </div>
+
+            <button
+              id="logout-btn"
               onClick={handleLogout}
-              className="flex items-center space-x-2 px-4 py-2 backdrop-blur-sm bg-white/10 hover:bg-white/20 text-white rounded-xl border border-white/20 transition-all duration-300 shadow-lg hover:shadow-purple-500/25"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)',
+                color: 'var(--text-muted)', fontSize: 13, fontWeight: 500,
+                padding: '7px 14px', borderRadius: 8, cursor: 'pointer',
+                fontFamily: 'inherit', transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(244,63,94,0.08)'; e.currentTarget.style.borderColor = 'rgba(244,63,94,0.3)'; e.currentTarget.style.color = '#f43f5e'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)'; }}
             >
-              <LogOut className="w-5 h-5" />
-              <span>Logout</span>
-            </motion.button>
+              <LogOut size={14} />
+              Sign out
+            </button>
           </div>
         </div>
-      </motion.header>
+      </header>
 
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="container mx-auto px-6 py-8 relative z-10"
-      >
-        {/* Enhanced Add Todo */}
-        <motion.div
-          variants={cardVariants}
-          whileHover={{ y: -5, scale: 1.02 }}
-          className="backdrop-blur-xl bg-white/10 rounded-3xl shadow-2xl p-8 mb-8 border border-white/20 relative overflow-hidden"
-          style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-transparent to-pink-500/10 rounded-3xl" />
-          <div className="relative flex space-x-4">
-            <motion.input
-              whileFocus={{ scale: 1.02 }}
-              type="text"
-              placeholder="What amazing thing will you accomplish today?"
-              value={newTodo}
-              onChange={(e) => setNewTodo(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && addTodo()}
-              className="flex-1 px-6 py-4 backdrop-blur-sm bg-white/10 border border-white/20 rounded-2xl focus:outline-none focus:border-pink-400/50 focus:bg-white/20 text-white placeholder-white/60 transition-all duration-300 focus:shadow-lg focus:shadow-purple-500/20"
-            />
-            <motion.button
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={addTodo}
-              className="px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 hover:from-purple-700 hover:via-pink-700 hover:to-purple-800 text-white rounded-2xl transition-all duration-300 flex items-center space-x-3 shadow-lg font-semibold relative overflow-hidden group"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Create</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-            </motion.button>
-          </div>
-        </motion.div>
+      {/* Main content */}
+      <main style={{ flex: 1, maxWidth: 900, margin: '0 auto', width: '100%', padding: '40px 24px 80px' }}>
 
-        {/* Enhanced Todo Stats */}
-        <motion.div 
-          variants={itemVariants}
-          className="grid md:grid-cols-3 gap-6 mb-8"
-        >
-          {[
-            { 
-              title: "Total Tasks", 
-              value: todoStats.total, 
-              color: "from-blue-400 to-blue-600", 
-              icon: Target,
-              bgGlow: "bg-blue-500/20",
-              shadowColor: "shadow-blue-500/25"
-            },
-            { 
-              title: "Completed", 
-              value: todoStats.completed, 
-              color: "from-violet-400 to-purple-600", 
-              icon: CheckCircle,
-              bgGlow: "bg-violet-500/20",
-              shadowColor: "shadow-violet-500/25"
-            },
-            { 
-              title: "Pending", 
-              value: todoStats.pending, 
-              color: "from-pink-400 to-rose-600", 
-              icon: Clock,
-              bgGlow: "bg-pink-500/20",
-              shadowColor: "shadow-pink-500/25"
-            }
-          ].map((stat, index) => (
-            <motion.div
-              key={stat.title}
-              variants={cardVariants}
-              whileHover={{ y: -10, scale: 1.05 }}
-              className="relative group"
+        {/* Page title */}
+        <div className="animate-fade-up" style={{ marginBottom: 32 }}>
+          <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.5px', marginBottom: 4 }}>
+            My Tasks
+          </h1>
+          <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          </p>
+        </div>
+
+        {/* Stat cards */}
+        <div className="animate-fade-up" style={{ animationDelay: '0.05s', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 32 }}>
+          {statCards.map(s => (
+            <div
+              key={s.id}
+              id={`stat-${s.id}`}
+              style={{
+                background: 'var(--bg-card)',
+                border: `1px solid ${s.border}`,
+                borderRadius: 14, padding: '20px 20px',
+                display: 'flex', flexDirection: 'column', gap: 12,
+                transition: 'all 0.2s',
+              }}
             >
-              <div className={`absolute inset-0 ${stat.bgGlow} rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-500`} />
-              <motion.div 
-                className={`relative backdrop-blur-xl bg-white/10 rounded-3xl shadow-2xl p-8 border border-white/20 hover:${stat.shadowColor} transition-all duration-300`}
-                style={{
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-                }}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-white/90">{stat.title}</h3>
-                  <motion.div
-                    animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "linear", delay: index * 0.5 }}
-                    whileHover={{ scale: 1.2 }}
-                  >
-                    <stat.icon className="w-6 h-6 text-white/70" />
-                  </motion.div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>{s.label}</span>
+                <div style={{
+                  width: 32, height: 32, borderRadius: 8,
+                  background: s.bg, border: `1px solid ${s.border}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <s.icon size={16} color={s.color} strokeWidth={2} />
                 </div>
-                <motion.p
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 500, delay: 0.2 + index * 0.1 }}
-                  className={`text-4xl font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}
-                  style={{ filter: 'drop-shadow(0 0 10px rgba(168, 85, 247, 0.3))' }}
-                >
-                  {stat.value}
-                </motion.p>
-              </motion.div>
-            </motion.div>
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: s.color, letterSpacing: '-1px', lineHeight: 1 }}>
+                {s.value}
+              </div>
+            </div>
           ))}
-        </motion.div>
+        </div>
 
-        {/* Enhanced Todo List */}
-        <motion.div
-          variants={cardVariants}
-          className="backdrop-blur-xl bg-white/10 rounded-3xl shadow-2xl border border-white/20 overflow-hidden relative"
-          style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-          }}
-        >
-          <div className="p-8 border-b border-white/20 bg-gradient-to-r from-violet-500/20 via-purple-500/15 to-pink-500/20 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10" />
-            <h2 className="text-2xl font-bold text-white flex items-center space-x-3 relative z-10">
-              <motion.div
-                animate={{ 
-                  rotate: [0, -10, 10, 0],
-                  scale: [1, 1.1, 1]
-                }}
-                transition={{ 
-                  duration: 2, 
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-              >
-                <Sparkles className="w-6 h-6" />
-              </motion.div>
-              <span className="bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">Your Epic Tasks</span>
-            </h2>
+        {/* Progress bar */}
+        {todoStats.total > 0 && (
+          <div className="animate-fade-up" style={{ animationDelay: '0.1s', marginBottom: 28 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>
+                <TrendingUp size={14} color="#10b981" />
+                Progress
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#10b981' }}>{progress}%</span>
+            </div>
+            <div style={{ height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: 99,
+                background: 'linear-gradient(90deg, #7c3aed, #10b981)',
+                width: `${progress}%`,
+                transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                boxShadow: '0 0 12px rgba(16,185,129,0.4)',
+              }} />
+            </div>
           </div>
-          <div className="divide-y divide-white/10">
-            <AnimatePresence>
+        )}
+
+        {/* Add todo input */}
+        <div className="animate-fade-up" style={{ animationDelay: '0.12s', marginBottom: 28 }}>
+          <div style={{
+            display: 'flex', gap: 10, alignItems: 'center',
+            background: 'var(--bg-card)', border: '1px solid var(--border)',
+            borderRadius: 14, padding: '8px 8px 8px 18px',
+            transition: 'border-color 0.2s, box-shadow 0.2s',
+          }}
+            onFocus={() => { }}
+          >
+            <input
+              id="new-todo-input"
+              type="text"
+              placeholder="Add a new task…"
+              value={newTodo}
+              onChange={e => setNewTodo(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addTodo()}
+              style={{
+                flex: 1, background: 'transparent', border: 'none', outline: 'none',
+                color: 'var(--text-primary)', fontSize: 14, fontFamily: 'inherit',
+                placeholder: 'var(--text-muted)',
+              }}
+            />
+            <button
+              id="add-todo-btn"
+              onClick={addTodo}
+              disabled={!newTodo.trim()}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: newTodo.trim() ? 'linear-gradient(135deg, #7c3aed, #6d28d9)' : 'rgba(255,255,255,0.05)',
+                border: '1px solid ' + (newTodo.trim() ? 'rgba(124,58,237,0.5)' : 'var(--border)'),
+                color: newTodo.trim() ? '#fff' : 'var(--text-muted)',
+                fontSize: 13, fontWeight: 600, padding: '9px 18px',
+                borderRadius: 9, cursor: newTodo.trim() ? 'pointer' : 'not-allowed',
+                fontFamily: 'inherit', transition: 'all 0.2s',
+                boxShadow: newTodo.trim() ? '0 0 20px rgba(124,58,237,0.3)' : 'none',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <Plus size={15} strokeWidth={2.5} />
+              Add task
+            </button>
+          </div>
+        </div>
+
+        {/* Todo list */}
+        <div className="animate-fade-up" style={{ animationDelay: '0.16s' }}>
+          {todos.length === 0 ? (
+            <div style={{
+              background: 'var(--bg-card)', border: '1px solid var(--border)',
+              borderRadius: 14, padding: '60px 32px',
+              textAlign: 'center',
+            }}>
+              <div style={{
+                width: 56, height: 56, borderRadius: 16,
+                background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}>
+                <ListTodo size={24} color="#8b5cf6" strokeWidth={1.5} />
+              </div>
+              <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
+                No tasks yet
+              </p>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                Add your first task above to get started
+              </p>
+            </div>
+          ) : (
+            <div style={{
+              background: 'var(--bg-card)', border: '1px solid var(--border)',
+              borderRadius: 14, overflow: 'hidden',
+            }}>
               {todos.map((todo, index) => (
-                <motion.div
+                <div
                   key={todo._id}
-                  initial={{ opacity: 0, x: -50, scale: 0.9 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: 50, scale: 0.9, transition: { duration: 0.2 } }}
-                  whileHover={{ scale: 1.02, x: 10, backgroundColor: 'rgba(255, 255, 255, 0.08)' }}
-                  transition={{ 
-                    type: "spring", 
-                    stiffness: 300, 
-                    damping: 24,
-                    delay: index * 0.05
+                  id={`todo-item-${todo._id}`}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    padding: '14px 16px',
+                    borderBottom: index < todos.length - 1 ? '1px solid var(--border)' : 'none',
+                    background: hoveredId === todo._id ? 'rgba(255,255,255,0.025)' : 'transparent',
+                    transition: 'background 0.15s',
+                    opacity: deletingId === todo._id ? 0.4 : 1,
                   }}
-                  className="p-6 flex items-center space-x-4 hover:bg-white/5 transition-all duration-300 group relative overflow-hidden"
+                  onMouseEnter={() => setHoveredId(todo._id)}
+                  onMouseLeave={() => setHoveredId(null)}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
-                  <motion.button
-                    whileHover={{ scale: 1.2, rotate: 360 }}
-                    whileTap={{ scale: 0.9 }}
+                  {/* Checkbox */}
+                  <button
+                    id={`toggle-todo-${todo._id}`}
                     onClick={() => toggleTodo(todo._id, todo.completed)}
-                    className={`relative z-10 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
-                      todo.completed
-                        ? 'bg-gradient-to-r from-violet-400 to-purple-500 border-violet-400 text-white shadow-lg shadow-violet-500/25'
-                        : 'border-white/30 hover:border-violet-400 hover:shadow-lg hover:shadow-violet-500/25'
-                    }`}
+                    style={{
+                      flexShrink: 0,
+                      width: 22, height: 22, borderRadius: 6,
+                      border: `1.5px solid ${todo.completed ? '#10b981' : 'rgba(255,255,255,0.2)'}`,
+                      background: todo.completed ? '#10b981' : 'transparent',
+                      cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'all 0.2s',
+                      boxShadow: todo.completed ? '0 0 12px rgba(16,185,129,0.35)' : 'none',
+                    }}
+                    onMouseEnter={e => { if (!todo.completed) { e.currentTarget.style.borderColor = '#10b981'; e.currentTarget.style.background = 'rgba(16,185,129,0.12)'; } }}
+                    onMouseLeave={e => { if (!todo.completed) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.background = 'transparent'; } }}
                   >
                     {todo.completed && (
-                      <motion.div
-                        initial={{ scale: 0, rotate: -180 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        transition={{ type: "spring", stiffness: 500 }}
-                      >
-                        <CheckCircle className="w-5 h-5" />
-                      </motion.div>
+                      <Check size={13} color="#fff" strokeWidth={3} style={{ animation: 'check-pop 0.25s ease' }} />
                     )}
-                  </motion.button>
+                  </button>
 
+                  {/* Text or edit input */}
                   {editingId === todo._id ? (
-                    <div className="flex-1 flex items-center space-x-3 relative z-10">
-                      <motion.input
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        type="text"
-                        value={editText}
-                        onChange={(e) => setEditText(e.target.value)}
-                        className="flex-1 px-4 py-3 backdrop-blur-sm bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:border-violet-400/50 text-white placeholder-white/60 focus:shadow-lg focus:shadow-purple-500/20 transition-all duration-300"
-                        autoFocus
-                      />
-                      <motion.button
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => updateTodo(todo._id, editText)}
-                        className="p-3 text-violet-400 hover:text-violet-300 hover:bg-violet-500/20 rounded-xl transition-all duration-300"
-                      >
-                        <Save className="w-5 h-5" />
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.1, rotate: -5 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => {
-                          setEditingId(null);
-                          setEditText('');
-                        }}
-                        className="p-3 text-gray-400 hover:text-gray-300 hover:bg-gray-500/20 rounded-xl transition-all duration-300"
-                      >
-                        <X className="w-5 h-5" />
-                      </motion.button>
-                    </div>
+                    <input
+                      id={`edit-todo-input-${todo._id}`}
+                      type="text"
+                      value={editText}
+                      onChange={e => setEditText(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') updateTodo(todo._id, editText);
+                        if (e.key === 'Escape') { setEditingId(null); setEditText(''); }
+                      }}
+                      autoFocus
+                      style={{
+                        flex: 1, background: 'rgba(124,58,237,0.08)',
+                        border: '1px solid rgba(124,58,237,0.4)', borderRadius: 8,
+                        padding: '6px 12px', color: 'var(--text-primary)',
+                        fontSize: 14, fontFamily: 'inherit', outline: 'none',
+                        boxShadow: '0 0 0 3px rgba(124,58,237,0.12)',
+                      }}
+                    />
                   ) : (
-                    <>
-                      <motion.span 
-                        className={`flex-1 text-lg transition-all duration-300 relative z-10 ${
-                          todo.completed 
-                            ? 'line-through text-white/50' 
-                            : 'text-white group-hover:text-white/90'
-                        }`}
-                        animate={todo.completed ? { opacity: 0.5 } : { opacity: 1 }}
-                      >
-                        {todo.text}
-                      </motion.span>
-                      <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-all duration-300 relative z-10">
-                        <motion.button
-                          whileHover={{ scale: 1.1, rotate: 5 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => {
-                            setEditingId(todo._id);
-                            setEditText(todo.text);
-                          }}
-                          className="p-3 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-xl transition-all duration-300"
-                        >
-                          <Edit className="w-5 h-5" />
-                        </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.1, rotate: -5 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => deleteTodo(todo._id)}
-                          className="p-3 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-xl transition-all duration-300"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </motion.button>
-                      </div>
-                    </>
+                    <span style={{
+                      flex: 1, fontSize: 14, color: todo.completed ? 'var(--text-muted)' : 'var(--text-primary)',
+                      textDecoration: todo.completed ? 'line-through' : 'none',
+                      transition: 'color 0.2s',
+                      lineHeight: 1.5,
+                    }}>
+                      {todo.text}
+                    </span>
                   )}
-                </motion.div>
+
+                  {/* Actions */}
+                  <div style={{
+                    display: 'flex', gap: 4, flexShrink: 0,
+                    opacity: editingId === todo._id ? 1 : (hoveredId === todo._id ? 1 : 0),
+                    transition: 'opacity 0.15s',
+                  }}>
+                    {editingId === todo._id ? (
+                      <>
+                        <button
+                          id={`save-todo-${todo._id}`}
+                          onClick={() => updateTodo(todo._id, editText)}
+                          style={actionBtnStyle('#10b981', 'rgba(16,185,129,0.1)')}
+                          title="Save"
+                        >
+                          <Check size={14} strokeWidth={2.5} />
+                        </button>
+                        <button
+                          id={`cancel-edit-${todo._id}`}
+                          onClick={() => { setEditingId(null); setEditText(''); }}
+                          style={actionBtnStyle('var(--text-muted)', 'rgba(255,255,255,0.05)')}
+                          title="Cancel"
+                        >
+                          <X size={14} />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          id={`edit-todo-${todo._id}`}
+                          onClick={() => { setEditingId(todo._id); setEditText(todo.text); }}
+                          style={actionBtnStyle('#8b5cf6', 'rgba(139,92,246,0.1)')}
+                          title="Edit"
+                        >
+                          <Edit3 size={14} />
+                        </button>
+                        <button
+                          id={`delete-todo-${todo._id}`}
+                          onClick={() => handleDelete(todo._id)}
+                          style={actionBtnStyle('#f43f5e', 'rgba(244,63,94,0.1)')}
+                          title="Delete"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
               ))}
-            </AnimatePresence>
-            {todos.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-12 text-center"
-              >
-                <motion.div
-                  animate={{ 
-                    rotate: [0, 10, -10, 0],
-                    scale: [1, 1.1, 1]
-                  }}
-                  transition={{ 
-                    duration: 3, 
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                  className="mb-6"
-                >
-                  <CheckCircle className="w-16 h-16 mx-auto text-white/30" style={{ filter: 'drop-shadow(0 0 15px rgba(168, 85, 247, 0.2))' }} />
-                </motion.div>
-                <p className="text-white/60 text-lg">
-                  Your canvas awaits! Create your first masterpiece above.
-                </p>
-              </motion.div>
-            )}
-          </div>
-        </motion.div>
-      </motion.div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer note */}
+        {todos.length > 0 && (
+          <p style={{ marginTop: 16, fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>
+            {todoStats.completed} of {todoStats.total} tasks completed
+          </p>
+        )}
+      </main>
+
+      <style>{`
+        @keyframes check-pop {
+          0%   { transform: scale(0) rotate(-45deg); opacity: 0; }
+          60%  { transform: scale(1.25) rotate(5deg); }
+          100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+        input::placeholder { color: var(--text-muted); }
+      `}</style>
     </div>
   );
 });
+
+function actionBtnStyle(color, bg) {
+  return {
+    width: 30, height: 30, borderRadius: 7,
+    background: bg, border: `1px solid ${color}25`,
+    color: color, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    transition: 'all 0.15s', fontFamily: 'inherit',
+  };
+}
 
 export default Dashboard;

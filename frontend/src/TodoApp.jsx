@@ -3,8 +3,8 @@ import LandingPage from './LandingPage';
 import AuthForm from './AuthForm';
 import Dashboard from './Dashboard';
 
-// API Base URL - change this to your backend URL
-const API_BASE = 'https://todo-c-backend.vercel.app/api';
+// API Base URL - relative path proxied to backend via vite.config.js
+const API_BASE = '/api';
 
 const TodoApp = () => {
   const [currentView, setCurrentView] = useState('landing');

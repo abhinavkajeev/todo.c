@@ -17,7 +17,7 @@ app.use(cors({
 
     // Allow Vercel frontend and any localhost port
     const allowedOrigins = [
-      'https://todo-c-amber.vercel.app', 'http://localhost:5173'
+      'https://todo-c-amber.vercel.app', 'http://localhost:5174'
     ];
     const localhostRegex = /^http:\/\/localhost:\d+$/;
 
